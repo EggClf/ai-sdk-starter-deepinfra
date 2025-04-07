@@ -1,5 +1,5 @@
 "use client";
-import { modelID } from "@/ai/providers";
+import { modelID, MODELS } from "@/ai/providers";
 import {
   Select,
   SelectContent,
@@ -14,12 +14,6 @@ interface ModelPickerProps {
   setSelectedModel: (model: modelID) => void;
 }
 
-const MODELS: Record<modelID, string> = {
-  "deepseek-ai/DeepSeek-R1": "A reasoning model",
-  "meta-llama/Llama-3.3-70B-Instruct-Turbo": "A reasoning model",
-  "Qwen/Qwen2.5-72B-Instruct": "A large model",
-};
-
 export const ModelPicker = ({
   selectedModel,
   setSelectedModel,
@@ -32,7 +26,7 @@ export const ModelPicker = ({
         </SelectTrigger>
         <SelectContent>
           <SelectGroup>
-            {Object.entries(MODELS).map(([modelId]) => (
+            {MODELS.map((modelId) => (
               <SelectItem key={modelId} value={modelId}>
                 {modelId}
               </SelectItem>
