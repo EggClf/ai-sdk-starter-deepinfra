@@ -1,5 +1,7 @@
 "use client";
 
+import { DataTable } from "./table-result";
+
 import type { Message as TMessage } from "ai";
 import { AnimatePresence, motion } from "motion/react";
 import { memo, useCallback, useEffect, useState } from "react";
@@ -75,7 +77,7 @@ export function ReasoningMessagePart({
               "cursor-pointer rounded-full dark:hover:bg-zinc-800 hover:bg-zinc-200",
               {
                 "dark:bg-zinc-800 bg-zinc-200": isExpanded,
-              },
+              }
             )}
             onClick={() => {
               setIsExpanded(!isExpanded);
@@ -106,7 +108,7 @@ export function ReasoningMessagePart({
                 <Markdown key={detailIndex}>{detail.text}</Markdown>
               ) : (
                 "<redacted>"
-              ),
+              )
             )}
           </motion.div>
         )}
@@ -137,7 +139,7 @@ const PurePreviewMessage = ({
         <div
           className={cn(
             "flex gap-4 w-full group-data-[role=user]/message:ml-auto group-data-[role=user]/message:max-w-2xl",
-            "group-data-[role=user]/message:w-fit",
+            "group-data-[role=user]/message:w-fit"
           )}
         >
           {message.role === "assistant" && (
@@ -172,6 +174,28 @@ const PurePreviewMessage = ({
                 case "tool-invocation":
                   const { toolName, state } = part.toolInvocation;
 
+                  // Example: Render DataTable for getDataBI tool if result present
+                  if (toolName === "getDataBI" && state === "result") {
+                    const result = part.toolInvocation.result;
+                    return (
+                      <motion.div
+                        initial={{ y: 5, opacity: 0 }}
+                        animate={{ y: 0, opacity: 1 }}
+                        key={`message-${message.id}-part-${i}`}
+                        className="w-1/2 max-w-xl mx-auto"
+                      >
+                        <DataTable
+                          data={{
+                            title: "BI Query Results",
+                            columns: result.columns,
+                            records: result.records,
+                          }}
+                        />
+                      </motion.div>
+                    );
+                  }
+
+                  // Default fallback for tool invocation
                   return (
                     <motion.div
                       initial={{ y: 5, opacity: 0 }}
