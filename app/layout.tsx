@@ -14,9 +14,9 @@ const geistMono = Geist_Mono({
 });
 
 export const metadata: Metadata = {
-  title: "Vercel x DeepInfra Chatbot",
+  title: "Chatbot BI",
   description:
-    "This starter project uses DeepInfra with the AI SDK via the Vercel Marketplace",
+    "Đồ án này sử dụng mô hình ngôn ngữ lớn (LLM) để tạo ra một chatbot có khả năng trả lời các câu hỏi liên quan đến báo cáo kinh doanh",
 };
 
 export default function RootLayout({

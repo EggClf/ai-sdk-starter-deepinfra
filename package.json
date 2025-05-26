@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@ai-sdk/deepinfra": "^0.2.7",
+    "@ai-sdk/google": "^1.2.18",
     "@ai-sdk/react": "^1.2.6",
     "@opentelemetry/api-logs": "^0.200.0",
     "@opentelemetry/instrumentation": "^0.200.0",
