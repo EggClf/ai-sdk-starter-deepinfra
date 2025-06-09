@@ -11,7 +11,9 @@ export const Messages = ({
   isLoading: boolean;
   status: "error" | "submitted" | "streaming" | "ready";
 }) => {
-  const [containerRef, endRef] = useScrollToBottom();
+  // Update to use the new hook signature with autoScroll set to true for messages
+  const [containerRef, endRef, scrollToBottom] = useScrollToBottom(true);
+
   return (
     <div
       className="flex-1 h-full space-y-4 overflow-y-auto py-8"

@@ -6,7 +6,7 @@ import type { Message as TMessage } from "ai";
 import { AnimatePresence, motion } from "motion/react";
 import { memo, useCallback, useEffect, useState } from "react";
 import equal from "fast-deep-equal";
-
+import { DynamicChart } from "./dynamic-chart";
 import { Markdown } from "./markdown";
 import { cn } from "@/lib/utils";
 import {
@@ -128,12 +128,11 @@ const PurePreviewMessage = ({
   isLatestMessage: boolean;
 }) => {
   return (
-    <AnimatePresence key={message.id}>
+    <div key={message.id}>
       <motion.div
         className="w-full mx-auto px-4 group/message"
         initial={{ y: 5, opacity: 0 }}
         animate={{ y: 0, opacity: 1 }}
-        key={`message-${message.id}`}
         data-role={message.role}
       >
         <div
@@ -177,20 +176,33 @@ const PurePreviewMessage = ({
                   // Example: Render DataTable for getDataBI tool if result present
                   if (toolName === "getDataBI" && state === "result") {
                     const result = part.toolInvocation.result;
+                    const chartConfig = result.chartConfig;
+                    const data = result.records as Record<
+                      string,
+                      string | number
+                    >[];
+
                     return (
                       <motion.div
                         initial={{ y: 5, opacity: 0 }}
                         animate={{ y: 0, opacity: 1 }}
                         key={`message-${message.id}-part-${i}`}
-                        className="w-1/2 max-w-xl mx-auto"
+                        className="w-3/4 max-w-xl mx-auto"
                       >
                         <DataTable
                           data={{
                             title: "BI Query Results",
                             columns: result.columns,
-                            records: result.records,
+                            records: data,
                           }}
                         />
+
+                        {chartConfig && (
+                          <DynamicChart
+                            chartData={data}
+                            chartConfig={chartConfig.config || chartConfig}
+                          />
+                        )}
                       </motion.div>
                     );
                   }
@@ -248,9 +260,9 @@ const PurePreviewMessage = ({
               }
             })}
           </div>
-        </div>
+        </div>{" "}
       </motion.div>
-    </AnimatePresence>
+    </div>
   );
 };
 

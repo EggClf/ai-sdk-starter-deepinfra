@@ -17,8 +17,8 @@ export async function POST(req: Request) {
       },
       body: JSON.stringify({ query: query }),
     });
-
-    return response;
+    const data = await response.json();
+    return NextResponse.json(data);
   } catch (error) {
     console.error("Error fetching BI data:", error);
     return NextResponse.json(
