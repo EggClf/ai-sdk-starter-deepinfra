@@ -173,7 +173,6 @@ const PurePreviewMessage = ({
                 case "tool-invocation":
                   const { toolName, state } = part.toolInvocation;
 
-                  // Example: Render DataTable for getDataBI tool if result present
                   if (toolName === "getDataBI" && state === "result") {
                     const result = part.toolInvocation.result;
                     const chartConfig = result.chartConfig;
@@ -181,6 +180,9 @@ const PurePreviewMessage = ({
                       string,
                       string | number
                     >[];
+                    const shouldDisplayChart =
+                      result.displayChart !== false && chartConfig;
+                    const shouldDisplayTable = result.displayTable !== false;
 
                     return (
                       <motion.div
@@ -189,15 +191,17 @@ const PurePreviewMessage = ({
                         key={`message-${message.id}-part-${i}`}
                         className="w-3/4 max-w-xl mx-auto"
                       >
-                        <DataTable
-                          data={{
-                            title: "BI Query Results",
-                            columns: result.columns,
-                            records: data,
-                          }}
-                        />
+                        {shouldDisplayTable && (
+                          <DataTable
+                            data={{
+                              title: "BI Query Results",
+                              columns: result.columns,
+                              records: data,
+                            }}
+                          />
+                        )}
 
-                        {chartConfig && (
+                        {shouldDisplayChart && (
                           <DynamicChart
                             chartData={data}
                             chartConfig={chartConfig.config || chartConfig}
@@ -206,7 +210,6 @@ const PurePreviewMessage = ({
                       </motion.div>
                     );
                   }
-
                   // Default fallback for tool invocation
                   return (
                     <motion.div

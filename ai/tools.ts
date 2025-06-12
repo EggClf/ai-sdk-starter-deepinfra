@@ -16,8 +16,15 @@ export const BITool = tool({
       .describe(
         'The query to get data from the BI tool, you only accept SELECT queries, and note that table name follow this format: `public."table_name"`. '
       ),
+    displayChart: z
+      .boolean()
+      .optional()
+      .default(false)
+      .describe(
+        "Whether to display a visualization chart of the data, only true if user require it."
+      ),
   }),
-  execute: async ({ query }) => {
+  execute: async ({ query, displayChart }) => {
     try {
       // Make a request to the /api/bi endpoint
       const response = await fetch(`${API_BASE_URL}/api/bi`, {
@@ -42,28 +49,33 @@ export const BITool = tool({
       const result = await response.json();
       const records = result.records as Record<string, string | number>[];
 
-      // Generate chart configuration based on the query and results
-      const chartResponse = await fetch(`${API_BASE_URL}/api/chart`, {
-        method: "POST",
-        headers: {
-          "Content-Type": "application/json",
-        },
-        body: JSON.stringify({
-          query: query.trim(),
-          results: records,
-        }),
-        cache: "no-store",
-      });
-
       let chartConfig = null;
-      if (chartResponse.ok) {
-        chartConfig = await chartResponse.json();
+      // Only fetch chart configuration if displayChart is true
+      if (displayChart) {
+        // Generate chart configuration based on the query and results
+        const chartResponse = await fetch(`${API_BASE_URL}/api/chart`, {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+          },
+          body: JSON.stringify({
+            query: query.trim(),
+            results: records,
+          }),
+          cache: "no-store",
+        });
+
+        if (chartResponse.ok) {
+          chartConfig = await chartResponse.json();
+        }
       }
 
       return {
         columns: result.columns || [],
         records: records,
         chartConfig: chartConfig,
+        displayChart: displayChart,
+        displayTable: !displayChart, // Pass the display preference to the UI
       };
     } catch (error) {
       console.error("Error using BI Tool:", error);
@@ -74,6 +86,7 @@ export const BITool = tool({
         columns: [],
         records: [],
         chartConfig: null,
+        displayChart: false,
       };
     }
   },
@@ -125,6 +138,59 @@ export const RAGTool = tool({
         }`,
         documents: [],
         documentCount: 0,
+      };
+    }
+  },
+});
+
+// Create text to sql tool
+export const TextToSQLTool = tool({
+  description: "Convert natural language query to SQL query",
+  parameters: z.object({
+    query: z
+      .string()
+      .min(1, "Query cannot be empty")
+      .describe(
+        "The natural language query to convert into SQL. The output will be a valid SQL SELECT statement."
+      ),
+    context: z
+      .string()
+      .describe(
+        "Optional context to help generate the SQL query. This can include information about the database schema, specific tables, column names"
+      ),
+  }),
+  execute: async ({ query, context }) => {
+    try {
+      // Make a request to the /api/text-to-sql endpoint
+      const response = await fetch(`${API_BASE_URL}/api/text2sql`, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ query: query.trim(), context: context.trim() }),
+        cache: "no-store",
+      });
+
+      if (!response.ok) {
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(
+          `Text to SQL Tool Error: ${
+            errorData.error || `HTTP ${response.status}: ${response.statusText}`
+          }`
+        );
+      }
+
+      const result = await response.json();
+      return {
+        sqlQuery: result.sqlQuery || "",
+      };
+    } catch (error) {
+      console.error("Error using Text to SQL Tool:", error);
+      return {
+        error: `Failed to convert text to SQL: ${
+          error instanceof Error ? error.message : "Unknown error"
+        }`,
+        sqlQuery: "",
       };
     }
   },
